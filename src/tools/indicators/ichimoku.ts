@@ -25,7 +25,9 @@ const ichimokuHandler = async (input: Input): Promise<Output> => {
     }
     const longestPeriod = Math.max(input.conversionPeriod, input.basePeriod, input.spanPeriod);
     if (longestPeriod > input.high.length) {
-      throw new Error(`Longest period (${longestPeriod}) cannot be greater than the number of values (${input.high.length}).`);
+      throw new Error(
+        `Longest period (${longestPeriod}) cannot be greater than the number of values (${input.high.length}).`
+      );
     }
 
     // Prepare configuration
@@ -43,7 +45,8 @@ const ichimokuHandler = async (input: Input): Promise<Output> => {
     return result;
   } catch (error: unknown) {
     console.error('Ichimoku Cloud calculation error:', error);
-    const message = error instanceof Error ? error.message : 'An unknown error occurred during Ichimoku Cloud calculation.';
+    const message =
+      error instanceof Error ? error.message : 'An unknown error occurred during Ichimoku Cloud calculation.';
     throw new Error(`Ichimoku Cloud calculation failed: ${message}`);
   }
 };
