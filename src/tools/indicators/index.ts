@@ -1,7 +1,5 @@
 import { McpServer } from '@modelcontextprotocol/sdk/server/mcp.js';
 import { z } from 'zod';
-
-// Import individual tool definitions here
 import { smaTool } from './sma.js';
 import { emaTool } from './ema.js';
 import { rsiTool } from './rsi.js';
@@ -41,7 +39,12 @@ export const registerIndicatorTools = (server: McpServer): void => {
   indicatorToolDefinitions.forEach((toolDef) => {
     try {
       // Pass the raw shape to the inputSchema parameter, assuming SDK handles z.object()
-      server.tool(toolDef.name, toolDef.description, toolDef.inputSchemaShape, toolDef.handler);
+      server.tool(toolDef.name, toolDef.description, toolDef.inputSchemaShape, async (input) => {
+        const result = await toolDef.handler(input);
+        return {
+          content: [{ type: 'text', text: JSON.stringify(result, null, 2) }],
+        };
+      });
       console.log(`Registered indicator tool: ${toolDef.name}`);
     } catch (error) {
       console.error(`Failed to register tool ${toolDef.name}:`, error);

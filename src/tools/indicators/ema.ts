@@ -11,9 +11,12 @@ const emaInputSchemaShape = {
   period: z.number().int().positive().describe('The time period for the EMA calculation (must be a positive integer).'),
 };
 
+type RawSchemaShape = typeof emaInputSchemaShape;
+type Input = z.infer<z.ZodObject<RawSchemaShape>>;
+type Output = { ema: number[] };
+
 // Define the handler function for the EMA tool using an arrow function expression
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-const emaHandler = async (input: z.infer<z.ZodObject<typeof emaInputSchemaShape>>): Promise<any> => {
+const emaHandler = async (input: Input): Promise<Output> => {
   try {
     // Validate that period is not greater than the number of values
     if (input.period > input.values.length) {
@@ -36,13 +39,12 @@ const emaHandler = async (input: z.infer<z.ZodObject<typeof emaInputSchemaShape>
   }
 };
 
-// Define the tool definition object structure (matching the one in index.ts)
+// Define the tool definition object structure
 type IndicatorToolDefinition = {
   name: string;
   description: string;
-  inputSchemaShape: z.ZodRawShape;
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  handler: (input: any) => Promise<any>;
+  inputSchemaShape: RawSchemaShape;
+  handler: (input: Input) => Promise<Output>;
 };
 
 // Export the tool definition for EMA

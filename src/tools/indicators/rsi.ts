@@ -11,9 +11,12 @@ const rsiInputSchemaShape = {
   period: z.number().int().positive().describe('The time period for the RSI calculation (must be a positive integer).'),
 };
 
+type RawSchemaShape = typeof rsiInputSchemaShape;
+type Input = z.infer<z.ZodObject<RawSchemaShape>>;
+type Output = { rsi: number[] };
+
 // Define the handler function for the RSI tool using an arrow function expression
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-const rsiHandler = async (input: z.infer<z.ZodObject<typeof rsiInputSchemaShape>>): Promise<any> => {
+const rsiHandler = async (input: Input): Promise<Output> => {
   try {
     // Validate that period is not greater than the number of values
     // RSI typically needs period + 1 values to calculate the first point
@@ -39,13 +42,12 @@ const rsiHandler = async (input: z.infer<z.ZodObject<typeof rsiInputSchemaShape>
   }
 };
 
-// Define the tool definition object structure (matching the one in index.ts)
+// Define the tool definition object structure
 type IndicatorToolDefinition = {
   name: string;
   description: string;
-  inputSchemaShape: z.ZodRawShape;
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  handler: (input: any) => Promise<any>;
+  inputSchemaShape: RawSchemaShape;
+  handler: (input: Input) => Promise<Output>;
 };
 
 // Export the tool definition for RSI

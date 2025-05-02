@@ -11,9 +11,12 @@ const smaInputSchemaShape = {
   period: z.number().int().positive().describe('The time period for the SMA calculation (must be a positive integer).'),
 };
 
+type RawSchemaShape = typeof smaInputSchemaShape;
+type Input = z.infer<z.ZodObject<RawSchemaShape>>;
+type Output = { sma: number[] };
+
 // Define the handler function for the SMA tool using an arrow function expression
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-const smaHandler = async (input: z.infer<z.ZodObject<typeof smaInputSchemaShape>>): Promise<any> => {
+const smaHandler = async (input: Input): Promise<Output> => {
   try {
     // Validate that period is not greater than the number of values
     if (input.period > input.values.length) {
@@ -40,9 +43,8 @@ const smaHandler = async (input: z.infer<z.ZodObject<typeof smaInputSchemaShape>
 type IndicatorToolDefinition = {
   name: string;
   description: string;
-  inputSchemaShape: z.ZodRawShape;
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  handler: (input: any) => Promise<any>;
+  inputSchemaShape: RawSchemaShape;
+  handler: (input: Input) => Promise<Output>;
 };
 
 // Export the tool definition for SMA

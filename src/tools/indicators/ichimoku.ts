@@ -1,7 +1,7 @@
 import { z } from 'zod';
 import { ichimokuCloud } from 'indicatorts'; // Assuming function name
 
-// Define the Zod schema for Ichimoku Cloud input
+// Define the input schema shape for Ichimoku Cloud
 const ichimokuInputSchemaShape = {
   high: z.array(z.number()).describe('Array of high prices'),
   low: z.array(z.number()).describe('Array of low prices'),
@@ -12,43 +12,52 @@ const ichimokuInputSchemaShape = {
   displacement: z.number().int().positive().default(26).describe('Displacement'),
 };
 
-// Define the Zod schema for the full input object
-const ichimokuInputSchema = z.object(ichimokuInputSchemaShape);
-
-// Type for the validated input
-type IchimokuInput = z.infer<typeof ichimokuInputSchema>;
+type RawSchemaShape = typeof ichimokuInputSchemaShape;
+type Input = z.infer<z.ZodObject<RawSchemaShape>>;
+type Output = ReturnType<typeof ichimokuCloud>;
 
 // Handler function for the Ichimoku Cloud tool
-const ichimokuHandler = async (input: IchimokuInput): Promise<{ ichimoku: unknown }> => {
+const ichimokuHandler = async (input: Input): Promise<Output> => {
   try {
-    // Validate input using the Zod schema
-    const validatedInput = ichimokuInputSchema.parse(input);
+    // Basic validation
+    if (input.high.length !== input.low.length || input.high.length !== input.close.length) {
+      throw new Error('Input arrays (high, low, close) must have the same length.');
+    }
+    const longestPeriod = Math.max(input.conversionPeriod, input.basePeriod, input.spanPeriod);
+    if (longestPeriod > input.high.length) {
+      throw new Error(`Longest period (${longestPeriod}) cannot be greater than the number of values (${input.high.length}).`);
+    }
 
-    // Prepare configuration using the correct IchimokuCloudConfig interface properties
+    // Prepare configuration
     const config = {
-      short: validatedInput.conversionPeriod, // Map conversionPeriod to short
-      medium: validatedInput.basePeriod, // Map basePeriod to medium
-      long: validatedInput.spanPeriod, // Map spanPeriod to long
-      close: validatedInput.displacement, // Map displacement to close (as per interface)
+      short: input.conversionPeriod,
+      medium: input.basePeriod,
+      long: input.spanPeriod,
+      displacement: input.displacement,
     };
 
-    // Call the indicatorts library function (expecting 4 args: high, low, close, config)
-    const result = ichimokuCloud(validatedInput.high, validatedInput.low, validatedInput.close, config);
+    // Call the indicatorts library function
+    const result = ichimokuCloud(input.high, input.low, input.close, config);
 
     // Return the result
-    return { ichimoku: result };
-  } catch (error) {
-    if (error instanceof z.ZodError) {
-      console.error('Input validation failed:', error.errors);
-      throw new Error(`Input validation failed: ${error.errors.map((e) => e.message).join(', ')}`);
-    }
-    console.error('Error calculating Ichimoku Cloud:', error);
-    throw new Error('Failed to calculate Ichimoku Cloud');
+    return result;
+  } catch (error: unknown) {
+    console.error('Ichimoku Cloud calculation error:', error);
+    const message = error instanceof Error ? error.message : 'An unknown error occurred during Ichimoku Cloud calculation.';
+    throw new Error(`Ichimoku Cloud calculation failed: ${message}`);
   }
 };
 
-// Define the MCP tool
-export const ichimokuTool = {
+// Define the tool definition object structure
+type IndicatorToolDefinition = {
+  name: string;
+  description: string;
+  inputSchemaShape: RawSchemaShape;
+  handler: (input: Input) => Promise<Output>;
+};
+
+// Export the tool definition for Ichimoku Cloud
+export const ichimokuTool: IndicatorToolDefinition = {
   name: 'ichimoku_cloud',
   description: 'Calculates the Ichimoku Cloud indicator',
   inputSchemaShape: ichimokuInputSchemaShape,

@@ -10,9 +10,12 @@ const atrInputSchemaShape = {
   period: z.number().int().positive().describe('The time period for the ATR calculation (must be a positive integer).'),
 };
 
+type RawSchemaShape = typeof atrInputSchemaShape;
+type Input = z.infer<z.ZodObject<RawSchemaShape>>;
+type Output = { atr: ReturnType<typeof atr> };
+
 // Define the handler function for the ATR tool using an arrow function expression
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-const atrHandler = async (input: z.infer<z.ZodObject<typeof atrInputSchemaShape>>): Promise<any> => {
+const atrHandler = async (input: Input): Promise<Output> => {
   try {
     // Basic validation: ensure all input arrays have the same length
     if (input.high.length !== input.low.length || input.high.length !== input.close.length) {
@@ -30,8 +33,7 @@ const atrHandler = async (input: z.infer<z.ZodObject<typeof atrInputSchemaShape>
       period: input.period,
     };
 
-    // Assuming the result is an array of numbers
-    // Correcting signature based on TS error: atr(high, low, close, config)
+    // Assuming the result is of type ReturnType<typeof atr>
     const result = atr(input.high, input.low, input.close, config);
 
     // Return the calculated ATR values
@@ -48,9 +50,8 @@ const atrHandler = async (input: z.infer<z.ZodObject<typeof atrInputSchemaShape>
 type IndicatorToolDefinition = {
   name: string;
   description: string;
-  inputSchemaShape: z.ZodRawShape;
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  handler: (input: any) => Promise<any>;
+  inputSchemaShape: RawSchemaShape;
+  handler: (input: Input) => Promise<Output>;
 };
 
 // Export the tool definition for ATR

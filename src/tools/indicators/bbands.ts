@@ -15,9 +15,16 @@ const bbandsInputSchemaShape = {
     .describe('The number of standard deviations to use for the upper and lower bands (must be positive).'),
 };
 
+type RawSchemaShape = typeof bbandsInputSchemaShape;
+type Input = z.infer<z.ZodObject<RawSchemaShape>>;
+type Output = {
+  upper: number[];
+  middle: number[];
+  lower: number[];
+};
+
 // Define the handler function for the Bollinger Bands tool using an arrow function expression
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-const bbandsHandler = async (input: z.infer<z.ZodObject<typeof bbandsInputSchemaShape>>): Promise<any> => {
+const bbandsHandler = async (input: Input): Promise<Output> => {
   try {
     // Validate that period is not greater than the number of values
     if (input.period > input.values.length) {
@@ -30,10 +37,10 @@ const bbandsHandler = async (input: z.infer<z.ZodObject<typeof bbandsInputSchema
       stdDev: input.stdDev,
     };
     // Assuming the result is an object like { upper: number[], middle: number[], lower: number[] }
-    const result = bollingerBands(input.values, config); // Changed function call
+    const result = bollingerBands(input.values, config);
 
     // Return the calculated Bollinger Bands components
-    return result; // Directly return the object from the library
+    return result;
   } catch (error: unknown) {
     console.error('Bollinger Bands calculation error:', error);
     const message =
@@ -43,13 +50,12 @@ const bbandsHandler = async (input: z.infer<z.ZodObject<typeof bbandsInputSchema
   }
 };
 
-// Define the tool definition object structure (matching the one in index.ts)
+// Define the tool definition object structure
 type IndicatorToolDefinition = {
   name: string;
   description: string;
-  inputSchemaShape: z.ZodRawShape;
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  handler: (input: any) => Promise<any>;
+  inputSchemaShape: RawSchemaShape;
+  handler: (input: Input) => Promise<Output>;
 };
 
 // Export the tool definition for Bollinger Bands

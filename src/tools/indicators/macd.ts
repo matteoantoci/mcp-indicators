@@ -17,9 +17,12 @@ const macdInputSchemaShape = {
     .describe('The time period for the signal line EMA (must be a positive integer).'),
 };
 
+type RawSchemaShape = typeof macdInputSchemaShape;
+type Input = z.infer<z.ZodObject<RawSchemaShape>>;
+type Output = ReturnType<typeof macd>;
+
 // Define the handler function for the MACD tool using an arrow function expression
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-const macdHandler = async (input: z.infer<z.ZodObject<typeof macdInputSchemaShape>>): Promise<any> => {
+const macdHandler = async (input: Input): Promise<Output> => {
   try {
     // Basic validation
     if (input.fastPeriod >= input.slowPeriod) {
@@ -34,7 +37,6 @@ const macdHandler = async (input: z.infer<z.ZodObject<typeof macdInputSchemaShap
     }
 
     // Assuming the indicatorts macd function takes values and a config object
-    // Trying simpler property names based on the TS error
     const config = {
       fast: input.fastPeriod,
       slow: input.slowPeriod,
@@ -44,7 +46,7 @@ const macdHandler = async (input: z.infer<z.ZodObject<typeof macdInputSchemaShap
     const result = macd(input.values, config);
 
     // Return the calculated MACD components
-    return result; // Directly return the object from the library if it matches the expected structure
+    return result;
   } catch (error: unknown) {
     console.error('MACD calculation error:', error);
     const message = error instanceof Error ? error.message : 'An unknown error occurred during MACD calculation.';
@@ -53,13 +55,12 @@ const macdHandler = async (input: z.infer<z.ZodObject<typeof macdInputSchemaShap
   }
 };
 
-// Define the tool definition object structure (matching the one in index.ts)
+// Define the tool definition object structure
 type IndicatorToolDefinition = {
   name: string;
   description: string;
-  inputSchemaShape: z.ZodRawShape;
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  handler: (input: any) => Promise<any>;
+  inputSchemaShape: RawSchemaShape;
+  handler: (input: Input) => Promise<Output>;
 };
 
 // Export the tool definition for MACD
