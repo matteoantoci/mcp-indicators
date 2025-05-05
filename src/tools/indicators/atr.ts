@@ -4,9 +4,9 @@ import { atr } from 'indicatorts';
 
 // Define the input schema shape for the ATR tool
 const atrInputSchemaShape = {
-  high: z.array(z.number()).min(1).describe('Array of high prices. Must contain at least one value.'),
-  low: z.array(z.number()).min(1).describe('Array of low prices. Must contain at least one value.'),
-  close: z.array(z.number()).min(1).describe('Array of closing prices. Must contain at least one value.'),
+  high: z.array(z.number()).min(1).describe('Array of high prices, ordered oldest to latest. Must contain at least one value.'),
+  low: z.array(z.number()).min(1).describe('Array of low prices, ordered oldest to latest. Must contain at least one value.'),
+  close: z.array(z.number()).min(1).describe('Array of closing prices, ordered oldest to latest. Must contain at least one value.'),
   period: z.number().int().positive().describe('The time period for the ATR calculation (must be a positive integer).'),
 };
 

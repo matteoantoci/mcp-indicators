@@ -7,7 +7,7 @@ const emaInputSchemaShape = {
   values: z
     .array(z.number())
     .min(1)
-    .describe('Array of numbers (e.g., closing prices). Must contain at least one value.'),
+    .describe('Array of numbers (e.g., closing prices), ordered oldest to latest. Must contain at least one value.'),
   period: z.number().int().positive().describe('The time period for the EMA calculation (must be a positive integer).'),
 };
 

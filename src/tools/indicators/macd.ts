@@ -7,7 +7,7 @@ const macdInputSchemaShape = {
   values: z
     .array(z.number())
     .min(1)
-    .describe('Array of numbers (e.g., closing prices). Must contain at least one value.'),
+    .describe('Array of numbers (e.g., closing prices), ordered oldest to latest. Must contain at least one value.'),
   fastPeriod: z.number().int().positive().describe('The time period for the fast EMA (must be a positive integer).'),
   slowPeriod: z.number().int().positive().describe('The time period for the slow EMA (must be a positive integer).'),
   signalPeriod: z

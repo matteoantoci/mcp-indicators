@@ -8,6 +8,7 @@ import { bbandsTool } from './bbands.js';
 import { stochTool } from './stoch.js';
 import { atrTool } from './atr.js';
 import { ichimokuTool } from './ichimoku.js';
+import { volumeProfileTool } from './volumeProfile.js';
 
 // Placeholder type for tool definition
 type IndicatorToolDefinition = {
@@ -29,6 +30,7 @@ const indicatorToolDefinitions: IndicatorToolDefinition[] = [
   stochTool,
   atrTool,
   ichimokuTool,
+  volumeProfileTool,
 ];
 
 /**

@@ -4,9 +4,9 @@ import { stoch } from 'indicatorts';
 
 // Define the input schema shape for the Stochastic Oscillator tool
 const stochInputSchemaShape = {
-  high: z.array(z.number()).min(1).describe('Array of high prices. Must contain at least one value.'),
-  low: z.array(z.number()).min(1).describe('Array of low prices. Must contain at least one value.'),
-  close: z.array(z.number()).min(1).describe('Array of closing prices. Must contain at least one value.'),
+  high: z.array(z.number()).min(1).describe('Array of high prices, ordered latest to oldest. Must contain at least one value.'),
+  low: z.array(z.number()).min(1).describe('Array of low prices, ordered latest to oldest. Must contain at least one value.'),
+  close: z.array(z.number()).min(1).describe('Array of closing prices, ordered latest to oldest. Must contain at least one value.'),
   period: z.number().int().positive().describe('The time period for the %K calculation (must be a positive integer).'),
   signalPeriod: z
     .number()

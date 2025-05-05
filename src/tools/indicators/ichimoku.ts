@@ -3,9 +3,9 @@ import { ichimokuCloud } from 'indicatorts'; // Assuming function name
 
 // Define the input schema shape for Ichimoku Cloud
 const ichimokuInputSchemaShape = {
-  high: z.array(z.number()).describe('Array of high prices'),
-  low: z.array(z.number()).describe('Array of low prices'),
-  close: z.array(z.number()).describe('Array of close prices'),
+  high: z.array(z.number()).describe('Array of high prices, ordered oldest to latest'),
+  low: z.array(z.number()).describe('Array of low prices, ordered oldest to latest'),
+  close: z.array(z.number()).describe('Array of close prices, ordered oldest to latest'),
   conversionPeriod: z.number().int().positive().default(9).describe('Conversion line period'),
   basePeriod: z.number().int().positive().default(26).describe('Base line period'),
   spanPeriod: z.number().int().positive().default(52).describe('Lagging span 2 period'),
