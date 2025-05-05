@@ -17,24 +17,32 @@ type Output = { atr: ReturnType<typeof atr> };
 // Define the handler function for the ATR tool using an arrow function expression
 const atrHandler = async (input: Input): Promise<Output> => {
   try {
-    // Basic validation: ensure all input arrays have the same length
-    if (input.high.length !== input.low.length || input.high.length !== input.close.length) {
-      throw new Error('Input arrays (high, low, close) must have the same length.');
+    let { high, low, close, period } = input;
+
+    // Determine the shortest length and truncate arrays if necessary
+    const minLength = Math.min(high.length, low.length, close.length);
+
+    if (minLength < high.length || minLength < low.length || minLength < close.length) {
+      console.warn(`ATR: Input arrays have different lengths. Truncating to the shortest length: ${minLength}`);
+      high = high.slice(0, minLength);
+      low = low.slice(0, minLength);
+      close = close.slice(0, minLength);
     }
-    // Validate that period is not greater than the number of values
+
+    // Validate that period is not greater than the number of values after potential truncation
     // ATR calculation needs at least 'period' data points to start
-    if (input.period > input.high.length) {
-      throw new Error(`Period (${input.period}) cannot be greater than the number of values (${input.high.length}).`);
+    if (period > high.length) { // Use high.length which is now minLength if truncated
+      throw new Error(`Period (${period}) cannot be greater than the number of values (${high.length}).`);
     }
 
     // Assuming the indicatorts atr function takes high, low, close arrays
     // and a config object with the period.
     const config = {
-      period: input.period,
+      period: period,
     };
 
     // Assuming the result is of type ReturnType<typeof atr>
-    const result = atr(input.high, input.low, input.close, config);
+    const result = atr(high, low, close, config);
 
     // Return the calculated ATR values
     return { atr: result };

@@ -32,31 +32,39 @@ type Output = {
 // Define the handler function for the Stochastic Oscillator tool using an arrow function expression
 const stochHandler = async (input: Input): Promise<Output> => {
   try {
-    // Basic validation: ensure all input arrays have the same length
-    if (input.high.length !== input.low.length || input.high.length !== input.close.length) {
-      throw new Error('Input arrays (high, low, close) must have the same length.');
+    let { high, low, close, period, signalPeriod, kSmoothingPeriod } = input;
+
+    // Determine the shortest length and truncate arrays if necessary
+    const minLength = Math.min(high.length, low.length, close.length);
+
+    if (minLength < high.length || minLength < low.length || minLength < close.length) {
+      console.warn(`Stochastic Oscillator: Input arrays have different lengths. Truncating to the shortest length: ${minLength}`);
+      high = high.slice(0, minLength);
+      low = low.slice(0, minLength);
+      close = close.slice(0, minLength);
     }
-    // Validate that period is not greater than the number of values
-    if (input.period > input.high.length) {
-      throw new Error(`Period (${input.period}) cannot be greater than the number of values (${input.high.length}).`);
+
+    // Validate that period is not greater than the number of values after potential truncation
+    if (period > high.length) { // Use high.length which is now minLength if truncated
+      throw new Error(`Period (${period}) cannot be greater than the number of values (${high.length}).`);
     }
     // Validate that signalPeriod is not greater than the number of values (after initial %K calculation)
-    if (input.signalPeriod > input.high.length) {
+    if (signalPeriod > high.length) { // Use high.length which is now minLength if truncated
       throw new Error(
-        `Signal Period (${input.signalPeriod}) cannot be greater than the number of values (${input.high.length}).`
+        `Signal Period (${signalPeriod}) cannot be greater than the number of values (${high.length}).`
       );
     }
 
     // Assuming the indicatorts stoch function takes high, low, close arrays
     // and a config object.
     const config = {
-      kPeriod: input.period,
-      dPeriod: input.signalPeriod,
-      slowingPeriod: input.kSmoothingPeriod,
+      kPeriod: period,
+      dPeriod: signalPeriod,
+      slowingPeriod: kSmoothingPeriod,
     };
 
     // Assuming the result is an object like { k: number[], d: number[] }
-    const result = stoch(input.high, input.low, input.close, config);
+    const result = stoch(high, low, close, config);
 
     // Return the calculated Stochastic Oscillator components (%K and %D)
     return result;

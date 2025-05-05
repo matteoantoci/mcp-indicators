@@ -3,9 +3,9 @@ import { ichimokuCloud } from 'indicatorts'; // Assuming function name
 
 // Define the input schema shape for Ichimoku Cloud
 const ichimokuInputSchemaShape = {
-  high: z.array(z.number()).describe('Array of high prices, ordered oldest to latest'),
-  low: z.array(z.number()).describe('Array of low prices, ordered oldest to latest'),
-  close: z.array(z.number()).describe('Array of close prices, ordered oldest to latest'),
+  high: z.array(z.number()).min(1).describe('Array of high prices, ordered oldest to latest'),
+  low: z.array(z.number()).min(1).describe('Array of low prices, ordered oldest to latest'),
+  close: z.array(z.number()).min(1).describe('Array of close prices, ordered oldest to latest'),
   conversionPeriod: z.number().int().positive().default(9).describe('Conversion line period'),
   basePeriod: z.number().int().positive().default(26).describe('Base line period'),
   spanPeriod: z.number().int().positive().default(52).describe('Lagging span 2 period'),
@@ -19,27 +19,36 @@ type Output = ReturnType<typeof ichimokuCloud>;
 // Handler function for the Ichimoku Cloud tool
 const ichimokuHandler = async (input: Input): Promise<Output> => {
   try {
-    // Basic validation
-    if (input.high.length !== input.low.length || input.high.length !== input.close.length) {
-      throw new Error('Input arrays (high, low, close) must have the same length.');
+    let { high, low, close, conversionPeriod, basePeriod, spanPeriod, displacement } = input;
+
+    // Determine the shortest length and truncate arrays if necessary
+    const minLength = Math.min(high.length, low.length, close.length);
+
+    if (minLength < high.length || minLength < low.length || minLength < close.length) {
+      console.warn(`Ichimoku Cloud: Input arrays have different lengths. Truncating to the shortest length: ${minLength}`);
+      high = high.slice(0, minLength);
+      low = low.slice(0, minLength);
+      close = close.slice(0, minLength);
     }
-    const longestPeriod = Math.max(input.conversionPeriod, input.basePeriod, input.spanPeriod);
-    if (longestPeriod > input.high.length) {
+
+    // Basic validation after potential truncation
+    const longestPeriod = Math.max(conversionPeriod, basePeriod, spanPeriod);
+    if (longestPeriod > high.length) { // Use high.length which is now minLength if truncated
       throw new Error(
-        `Longest period (${longestPeriod}) cannot be greater than the number of values (${input.high.length}).`
+        `Longest period (${longestPeriod}) cannot be greater than the number of values (${high.length}).`
       );
     }
 
     // Prepare configuration
     const config = {
-      short: input.conversionPeriod,
-      medium: input.basePeriod,
-      long: input.spanPeriod,
-      displacement: input.displacement,
+      short: conversionPeriod,
+      medium: basePeriod,
+      long: spanPeriod,
+      displacement: displacement,
     };
 
     // Call the indicatorts library function
-    const result = ichimokuCloud(input.high, input.low, input.close, config);
+    const result = ichimokuCloud(high, low, close, config);
 
     // Return the result
     return result;
